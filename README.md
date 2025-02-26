@@ -2,6 +2,8 @@
 
 A fast-written React Native app that fetches movies from OMDB and displays them in a list.
 
+![Alt text](demo.gif)
+
 ## Features
 
 - **Search Movies:** Type a title in the search bar.
