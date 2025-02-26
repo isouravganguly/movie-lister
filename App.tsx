@@ -1,131 +1,117 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
+  FlatList,
+  Pressable,
+  SafeAreaView,
   Text,
-  useColorScheme,
+  TextInput,
   View,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import {useFetchData} from './src/hook/useFetchData';
+import {MovieListTile} from './src/component/MovieListTile';
+import {useDebounce} from './src/hook/useDebounce';
+// import {ErrorModal} from './src/component/ErrorModal';
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [text, setText] = useState('');
+  const debouncedSearchKey = useDebounce(text, 500);
+  // const [showError, setShowError] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const {data, error, loading} = useFetchData(debouncedSearchKey);
+
+  console.log('Response Logs: ', {data, error, loading});
+
+  useEffect(() => {
+    console.log({error});
+    if (error) {
+      setTimeout(() => {
+        Alert.alert('Error', 'This request cannot be carried out.');
+      }, 100);
+    }
+  }, [error]);
+
+  const submitHandler = () => {
+    console.log('search key submits');
+    console.log({textDATA: text});
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
+  const renderItem = ({item}) => {
+    console.log({item});
+    return <MovieListTile item={item} />;
+  };
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
+    <SafeAreaView style={{flex: 1, backgroundColor: 'grey'}}>
+      {/* <ErrorModal error={showError} onClose={() => setShowError(false)} /> */}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          margin: 20,
+          height: 50,
+        }}>
+        <TextInput
           style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
+            backgroundColor: 'white',
+            flex: 1,
+            borderRadius: 10,
+            paddingHorizontal: 20,
+          }}
+          placeholder="Search for a movie title"
+          value={text}
+          onChangeText={text => setText(text)}
+        />
+        <Pressable
+          onPress={submitHandler}
+          style={{
+            backgroundColor: 'blue',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 10,
+            paddingHorizontal: 10,
+            borderRadius: 10,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+          <Text style={{color: 'white'}}>Search</Text>
+        </Pressable>
+      </View>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        {loading ? (
+          <ActivityIndicator size="large" color="blue" />
+        ) : error ? (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <Text>{error}</Text>
+          </View>
+        ) : data ? (
+          <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            style={{width: '100%'}}
+          />
+        ) : (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            {text === '' ? (
+              <Text
+                style={{
+                  textAlign: 'center',
+                }}>
+                Search a movie title on the Search Bar above!
+              </Text>
+            ) : null}
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
