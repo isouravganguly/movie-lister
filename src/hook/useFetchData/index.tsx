@@ -5,11 +5,9 @@ export const useFetchData = search_keyword => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const KEY = Config.KEY;
-  console.log({KEY});
+  const KEY = Config.KEY; // get api key from env
 
   const fetchData = async () => {
-    console.log('fetchData');
     setLoading(true);
     setData(null);
     setError(null);
@@ -18,12 +16,9 @@ export const useFetchData = search_keyword => {
         `https://www.omdbapi.com/?s=${search_keyword}&apikey=${KEY}`,
       );
       const response_data = await response.json();
-      console.log({response_data});
       if (response_data?.Response === 'True') {
-        console.log('data fetched here:', response_data.Search);
         setData(response_data.Search);
       } else {
-        console.log('Data not feteched!', response_data.error);
         setError(response_data.Error);
       }
     } catch (err) {

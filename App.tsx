@@ -13,19 +13,18 @@ import {useFetchData} from './src/hook/useFetchData';
 import {MovieListTile} from './src/component/MovieListTile';
 import {useDebounce} from './src/hook/useDebounce';
 // import {ErrorModal} from './src/component/ErrorModal';
+// Not removing the import for future implementation, and as a change-log in hobby-project
 
 function App(): React.JSX.Element {
   const [text, setText] = useState('');
-  const debouncedSearchKey = useDebounce(text, 500);
+  const debouncedSearchKey = useDebounce(text, 500); // delay search input
   // const [showError, setShowError] = useState(false);
 
   const {data, error, loading} = useFetchData(debouncedSearchKey);
 
-  console.log('Response Logs: ', {data, error, loading});
-
   useEffect(() => {
-    console.log({error});
     if (error) {
+      // show alert if error
       setTimeout(() => {
         Alert.alert('Error', 'This request cannot be carried out.');
       }, 100);
@@ -33,12 +32,10 @@ function App(): React.JSX.Element {
   }, [error]);
 
   const submitHandler = () => {
-    console.log('search key submits');
-    console.log({textDATA: text});
+    // no op, debounced search handles fetch
   };
 
   const renderItem = ({item}) => {
-    console.log({item});
     return <MovieListTile item={item} />;
   };
 
